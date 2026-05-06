@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router"
-import { colors } from "../../constants/colors"
+import { colors } from "../../constants/colors.js"
 import { MaterialIcons } from "@expo/vector-icons"
 import { StyleSheet, TouchableOpacity, View } from "react-native"
 
@@ -7,6 +7,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarHideOnKeyboard: true,
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: colors.primaryContrast,
         headerTitleAlign: "center",

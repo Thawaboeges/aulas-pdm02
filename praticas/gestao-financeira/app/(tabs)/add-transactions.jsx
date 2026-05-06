@@ -1,73 +1,79 @@
 import {
-  Text,
   View,
   ScrollView,
-  TextInput,
   Alert,
-  Button,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { globalStyles } from "../../styles/globalStyles";
-import { useState } from "react";
+import { globalStyles } from "../../styles/globalStyles.js";
+import Button from "../../components/Button.jsx";
+import { useContext, useRef, useState } from "react";
+import DescriptionInput from "../../components/DescriptionInput.jsx";
+import CurrencyInput from "../../components/CurrencyInput.jsx";
+import DatePicker from "../../components/DatePicker.jsx";
+import CategoryPicker from "../../components/CategoryPicker.jsx";
+import { MoneyContext } from "../../contexts/GlobalState.jsx"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+
+const initialForm = {
+  description: "",
+  value: 0,
+  date: new Date(),
+  category: "Renda",
+};
+
 export default function AddTransactions() {
-  const initialForm = {
-    description: "",
-    value: 0,
-    date: "",
-    category: "Renda",
+  const [form, setForm] = useState(initialForm);
+  const valueInputRef = useRef();
+  
+  const [transactions, setTransactions] = useContext(MoneyContext); 
+  
+  const setAsyncStorage = async (data) => {
+    try {
+      await AsyncStorage.setItem("transactions", JSON.stringify(data));
+    } catch (e) {
+      console.log(e);
+    }
   };
 
-  const [form, setForm] = useState(initialForm);
+  const addTransaction = async () => {
+    const newTransaction = { id: transactions.length + 1, ...form };
+    const updatedTransactions = [...transactions, newTransaction];
 
-  const addTransaction = () => {
-    Alert.alert(
-      `${form.description} | ${form.value} | ${form.date} | ${form.category}`,
-    );
+    setTransactions(updatedTransactions);
+    setForm(initialForm);
+    await setAsyncStorage(updatedTransactions);
+
+    Alert.alert("Transação adicionada com sucesso!");
   };
 
   return (
-    <View style={globalStyles.screenContainer}>
-      <ScrollView style={globalStyles.content}>
-        <View>
-          <View>
-            <Text style={globalStyles.inputLabel}>Descrição</Text>
-            <TextInput
-              value={form.description}
-              onChangeText={(text) => setForm({ ...form, description: text })}
-              style={globalStyles.input}
+    <KeyboardAvoidingView style={globalStyles.screenContainer}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView style={globalStyles.content}>
+          <View style={styles.form}>
+            <DescriptionInput
+              form={form}
+              setForm={setForm}
+              valueInputRef={valueInputRef}
             />
+            <CurrencyInput form={form} setForm={setForm} valueInputRef={valueInputRef} />
+            <DatePicker form={form} setForm={setForm} />
+            <CategoryPicker form={form} setForm={setForm} />
           </View>
-
-          <View>
-            <Text style={globalStyles.inputLabel}>Valor</Text>
-            <TextInput
-              value={form.value}
-              onChangeText={(text) => setForm({ ...form, value: text })}
-              keyboardType="numeric"
-              style={globalStyles.input}
-            />
-          </View>
-
-          <View>
-            <Text style={globalStyles.inputLabel}>Data</Text>
-            <TextInput
-              value={form.date}
-              onChangeText={(text) => setForm({ ...form, date: text })}
-              style={globalStyles.input}
-            />
-          </View>
-
-          <View>
-            <Text style={globalStyles.inputLabel}>Categoria</Text>
-            <TextInput
-              value={form.category}
-              onChangeText={(text) => setForm({ ...form, category: text })}
-              style={globalStyles.input}
-            />
-          </View>
-        </View>
-
-        <Button title="Adicionar" onPress={addTransaction} />
-      </ScrollView>
-    </View>
+          <Button onPress={addTransaction}>Adicionar</Button>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  form: {
+    gap: 12,
+    marginBottom: 40,
+    marginTop: 10,
+  },
+});
