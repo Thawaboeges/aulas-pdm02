@@ -7,36 +7,27 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
-import { globalStyles } from "../../styles/globalStyles.js";
-import Button from "../../components/Button.jsx";
+import { globalStyles } from "../../styles/globalStyles";
+import Button from "../../components/Button";
 import { useContext, useRef, useState } from "react";
-import DescriptionInput from "../../components/DescriptionInput.jsx";
-import CurrencyInput from "../../components/CurrencyInput.jsx";
-import DatePicker from "../../components/DatePicker.jsx";
-import CategoryPicker from "../../components/CategoryPicker.jsx";
-import { MoneyContext } from "../../contexts/GlobalState.jsx"
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import DescriptionInput from "../../components/DescriptionInput";
+import CurrencyInput from "../../components/CurrencyInput";
+import DatePicker from "../../components/DatePicker";
+import CategoryPicker from "../../components/CategoryPicker";
+import { MoneyContext } from "../../contexts/GlobalState";
+import { categories } from "../../constants/categories";
 
 const initialForm = {
   description: "",
   value: 0,
   date: new Date(),
-  category: "Renda",
+  category: categories.income.name,
 };
 
 export default function AddTransactions() {
   const [form, setForm] = useState(initialForm);
+  const [transactions, setTransactions] = useContext(MoneyContext);
   const valueInputRef = useRef();
-  
-  const [transactions, setTransactions] = useContext(MoneyContext); 
-  
-  const setAsyncStorage = async (data) => {
-    try {
-      await AsyncStorage.setItem("transactions", JSON.stringify(data));
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
   const addTransaction = async () => {
     const newTransaction = { id: transactions.length + 1, ...form };
@@ -44,7 +35,6 @@ export default function AddTransactions() {
 
     setTransactions(updatedTransactions);
     setForm(initialForm);
-    await setAsyncStorage(updatedTransactions);
 
     Alert.alert("Transação adicionada com sucesso!");
   };
@@ -59,7 +49,11 @@ export default function AddTransactions() {
               setForm={setForm}
               valueInputRef={valueInputRef}
             />
-            <CurrencyInput form={form} setForm={setForm} valueInputRef={valueInputRef} />
+            <CurrencyInput
+              form={form}
+              setForm={setForm}
+              valueInputRef={valueInputRef}
+            />
             <DatePicker form={form} setForm={setForm} />
             <CategoryPicker form={form} setForm={setForm} />
           </View>

@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createContext, useEffect, useState } from "react"
 
-export const MoneyContext = createContext([[], () => {}])
+export const MoneyContext = createContext()
 
-function GlobalState({ children }) {
+export default function GlobalState({ children }) {
   const [transactions, setTransactions] = useState([])
 
   useEffect(() => {
+    // AsyncStorage.clear()
     const getAsyncStorage = async () => {
       try {
         const storedTransactions = await AsyncStorage.getItem("transactions")
@@ -20,11 +21,22 @@ function GlobalState({ children }) {
     getAsyncStorage()
   }, [])
 
+  useEffect(() => {
+    const saveAsyncStorage = async () => {
+      try {
+        if (transactions.length > 0) {
+          await AsyncStorage.setItem("transactions", JSON.stringify(transactions))
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    saveAsyncStorage()
+  }, [transactions])
+
   return (
     <MoneyContext.Provider value={[transactions, setTransactions]}>
       {children}
     </MoneyContext.Provider>
   )
 }
-
-export default GlobalState
